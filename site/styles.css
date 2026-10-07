@@ -195,7 +195,7 @@ nav .right > a:not(.btn):hover { color: var(--ink); }
 @keyframes loop { to { transform: translateX(-50%); } }
 
 /* pipeline */
-.pipe { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: s; }
+.pipe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
 .pipe li { list-style: none; counter-increment: s; }
 .pipe h3::before { content: "0" counter(s); font: 500 13px/1 var(--mono); color: var(--cyan); display: block; margin-bottom: 40px; }
 .pipe h3 { font-size: 24px; margin-bottom: 8px; }
@@ -399,6 +399,8 @@ footer a:hover { color: #fff; }
   .line { position: static; display: table; margin-bottom: 16px; }
   .cast .gwen .line { margin-left: auto; }
   .card { padding: 22px; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .install pre { padding-top: 56px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

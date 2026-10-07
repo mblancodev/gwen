@@ -205,7 +205,8 @@ function level(v) {
   bar.classList.toggle("live", v != null);
   waves.forEach((w, i) => w.style.transform = v == null ? "" : `scaleY(${levels[levels.length - 5 + i] ?? .25})`);
 }
-const tail = (t, max = 60) => t.length > max ? "…" + t.slice(-max).replace(/^\S* /, "") : t;
+// a phone's bar holds fewer words; cut from the left so the newest stay in view
+const tail = (t, max = innerWidth < 600 ? 24 : 60) => t.length > max ? "…" + t.slice(-max).replace(/^\S* /, "") : t;
 async function type(s, el, text, ms = 34) {
   const heard = el === $("say");
   for (let i = 1; i <= text.length; i++) {

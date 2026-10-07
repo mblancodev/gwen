@@ -123,3 +123,5 @@ If Gwen saves you time, [buy me a coffee](https://www.buymeacoffee.com/manuelbla
 This code is open-source and free. Do what you want with it. If you want to contribute or fork it, by all means do it.
 
 MIT. See [LICENSE](LICENSE).
+
+The MIT license covers the code only. The Gwen logo and the animations in its SVG artwork are not included: all rights reserved. If you fork or redistribute, use your own.

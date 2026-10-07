@@ -40,6 +40,7 @@ There is no test suite. Check a change with the matching mock, then by hand.
 | Whisper install and start | `gwen/setup/voice.py` | |
 | A demo scene | `gwen/mocks/bar.py` and its siblings | |
 | The marketing site | `site/index.html` | |
+| How the site deploys (Vercel serves `site/` as is, no build) | `vercel.json` | |
 
 ## Invariants
 

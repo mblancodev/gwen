@@ -8,8 +8,6 @@ local whisper.cpp server by default, punctuation runs on this Mac too, and trans
 Translation framework (macOS 15 or later). Polish is opt-in: you can have an agent CLI on this Mac (Claude Code today) tidy each take; that one step is the
 only thing that leaves the Mac, and it is off by default.
 
-Gwen is not a coding-agent runner: no job pipeline, dashboard, agents, sandbox, pull requests or spend caps.
-
 | Key | What it does |
 | --- | --- |
 | Hold ⌃ | Dictate; let go to finish. The text is pasted where the cursor is |
@@ -121,5 +119,7 @@ If Gwen saves you time, [buy me a coffee](https://www.buymeacoffee.com/manuelbla
 [![Buy Me a Coffee](site/buymeacoffee.png)](https://www.buymeacoffee.com/manuelblancodev)
 
 ## License
+
+This code is open-source and free. Do what you want with it. If you want to contribute or fork it, by all means do it.
 
 MIT. See [LICENSE](LICENSE).

@@ -1,8 +1,7 @@
 # Gwen
 
 Dictation and translation in any app on macOS: hold a key, speak, the text is pasted at the cursor. Local by
-default (whisper.cpp on this Mac, Apple's on-device Translation). Not a coding-agent runner: no jobs, dashboard,
-agents or spend caps.
+default (whisper.cpp on this Mac, Apple's on-device Translation).
 
 ## Commands
 

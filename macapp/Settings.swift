@@ -1,11 +1,11 @@
-// Gwen Settings: Dictation, Translate, Tone, Shortcuts, Capture. Black Setup-styled window.
+// Gwen Settings: Dictation, Language, Tone, Shortcuts, Capture. Black Setup-styled window.
 import AppKit
 
 final class SettingsWindow: NSObject, NSWindowDelegate {
     enum Section: String, CaseIterable {
         case dictation, translate, tone, shortcuts, capture
         var title: String {
-            ["dictation": "Dictation", "translate": "Translate", "tone": "Tone", "shortcuts": "Shortcuts",
+            ["dictation": "Dictation", "translate": "Language", "tone": "Tone", "shortcuts": "Shortcuts",
              "capture": "Capture"][rawValue] ?? rawValue
         }
         var symbol: String {

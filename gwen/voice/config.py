@@ -13,6 +13,7 @@ DEFAULTS = {
     "apple_speech": False,
     "polish": False,
     "hud_visible": False,
+    "auto_send": False,
     "mic": "default",
     "transcribe": {"polish": False, "agent": None, "model": None},
 }

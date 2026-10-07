@@ -56,6 +56,10 @@ extension HUD {
                 }
             }
             paste(flat)
+            // Return after the paste has landed, so the message goes out without touching the keyboard.
+            if GwenConfig.bool("auto_send") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in self?.key(kVK_Return, flags: []) }
+            }
             apply("idle")
             if learn { editWatch.pastedInto(el, flat) }
         } else {
@@ -150,11 +154,11 @@ extension HUD {
         }
     }
 
-    func key(_ code: Int) {
+    func key(_ code: Int, flags: CGEventFlags = .maskCommand) {
         let src = CGEventSource(stateID: .privateState)
         for down in [true, false] {
             let e = CGEvent(keyboardEventSource: src, virtualKey: CGKeyCode(code), keyDown: down)
-            e?.flags = .maskCommand
+            e?.flags = flags
             e?.post(tap: .cghidEventTap)
         }
     }

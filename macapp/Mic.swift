@@ -168,8 +168,7 @@ final class MicFifo {
 
     /// `mic plain <fifo>\t<name>` (a mic picked by name, headphones, a call): the same frames into the FIFO with no
     /// voice processing, so nothing you're playing is ducked or filtered and a call keeps its sound. The capture
-    /// output converts to 16 kHz mono s16le itself. The recognizer hears it too (the bar's words, "Hey Gwen") but says
-    /// no `wake on`: the listener keeps checking every segment with speech to text.
+    /// output converts to 16 kHz mono s16le itself. The recognizer hears it too (the bar's words, "Hey Gwen").
     func plain(_ path: String, _ name: String) {
         off()
         let found = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInMicrophone, .externalUnknown], mediaType: .audio,
@@ -188,7 +187,7 @@ final class MicFifo {
         out.setSampleBufferDelegate(tapFeed, queue: queue)
         session.startRunning()
         tap = session
-        spotter.start(announce: false)
+        spotter.start()
     }
 
     func off() {
@@ -230,11 +229,10 @@ final class TapFeed: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate {
     }
 }
 
-/// Apple's on-device speech recognizer as a cheap wake-word spotter: the listener
-/// sends a segment to Whisper only after this heard "Gwen", instead of transcribing everything said near the Mac
-/// (that kept the Mac warm). Emits `heard <task> <partial transcript>`; the listener matches the wake word there, its
-/// learned spellings too. `wake on` / `wake off`: off (speech recognition denied, no on-device model) means the
-/// listener Whisper-checks every segment, as before. Runs on MicFifo's queue.
+/// Apple's on-device speech recognizer as a cheap wake-word spotter. Emits `heard <task> <partial transcript>`; the
+/// listener matches the wake word there, its trained spellings too (Wake.swift). `wake on` / `wake off`: off (the
+/// Settings switch, speech recognition denied, no on-device model) means the listener ignores what was heard.
+/// Runs on MicFifo's queue.
 final class WakeSpotter {
     static let wakeLocaleId = "en-US"  // "Hey Gwen" stay English-spotted
     let queue: DispatchQueue
@@ -287,18 +285,21 @@ final class WakeSpotter {
 
     func useLiveLocale() { setLocale(Self.liveLocaleId()) }
 
-    func start(announce: Bool = true) {
+    func start() {
         wanted = true
         setLocale(Self.wakeLocaleId)  // wake locale; restart only after auth below
         SFSpeechRecognizer.requestAuthorization { status in
             self.queue.async {
                 guard self.wanted else { return }
                 guard status == .authorized, let r = self.recognizer, r.supportsOnDeviceRecognition else {
-                    if announce { DispatchQueue.main.async { emit("wake off") } }
+                    DispatchQueue.main.async { emit("wake off") }
                     return
                 }
                 self.restart()
-                if announce { DispatchQueue.main.async { emit("wake on") } }
+                DispatchQueue.main.async {
+                    emit(GwenConfig.bool("wake") ? "wake on" : "wake off")
+                    WakeTrainer.firstRun()
+                }
             }
         }
     }

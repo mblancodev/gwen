@@ -25,7 +25,7 @@ There is no test suite. Check a change with the matching mock, then by hand.
 | Mic capture, speech-to-text health, segmenting | `gwen/voice/audio.py` | |
 | How spoken text is cleaned and punctuated | `gwen/voice/dictation.py`, `gwen/voice/punctuation.py`, `gwen/voice/small_marks.py` | |
 | The words the punctuation rules look for, per language | `gwen/voice/punctuation_words.py` | |
-| "Hey Gwen" | `gwen/voice/wake.py` | |
+| "Hey Gwen", and teaching it your voice | `gwen/voice/wake.py`, `macapp/Wake.swift` | `WakeTrainer` |
 | Learned words | `gwen/voice/learn.py`, `macapp/HUD+Learn.swift` | |
 | Paths under `~/.gwen`, prefs | `gwen/voice/paths.py`, `gwen/voice/config.py`, `macapp/Config.swift` | |
 | What Python tells the HUD | `gwen/voice/bridge.py` | |

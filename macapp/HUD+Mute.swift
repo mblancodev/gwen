@@ -6,14 +6,23 @@ import CoreAudio
 
 extension HUD {
     static var mutedByGwen = false
+    static var chimeUntil = Date.distantPast
     static var muteWhileListening: Bool {
         get { UserDefaults.standard.object(forKey: "muteWhileListening") as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: "muteWhileListening") }
     }
 
     /// Called on every state change (apply) and when the setting flips.
+    /// "Hey Gwen" landed. Muting other audio waits for it, or the dictation it starts would cut it off.
+    func wakeChime() {
+        NSSound(named: "Tink")?.play()
+        HUD.chimeUntil = Date().addingTimeInterval(0.4)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in self?.updateMute() }
+    }
+
     func updateMute() {
-        let want = HUD.muteWhileListening && state == "dictating" && (HUD.mutedByGwen || otherAppPlays())
+        let want = HUD.muteWhileListening && state == "dictating" && Date() >= HUD.chimeUntil
+            && (HUD.mutedByGwen || otherAppPlays())
         if want && !HUD.mutedByGwen {
             if outputMuted() == false, setOutputMuted(true) { HUD.mutedByGwen = true }
         } else if !want {

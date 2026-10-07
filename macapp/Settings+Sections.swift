@@ -14,12 +14,20 @@ extension SettingsWindow {
 
     func dictationPage() -> [NSView] {
         [header("Dictation", "How Gwen cleans and learns from what you say. Transcription itself stays on this Mac."),
+         toggle("Hey Gwen", "Say it to start dictating hands-free. It is listened for on this Mac only.",
+                GwenConfig.bool("wake")) { on in
+             GwenConfig.set("wake", on); emit(on ? "wake on" : "wake off"); SettingsWindow.refresh()
+         },
+         wakeTrainRow(),
          toggle("Learn from edits", "When you fix a paste in the same field, Gwen remembers the word.",
                 GwenConfig.bool("learn_from_edits")) { on in GwenConfig.set("learn_from_edits", on); SettingsWindow.refresh() },
          toggle("Mute other audio while listening", "While you dictate and another app plays, the sound goes off; "
                 + "it comes back when Gwen stops listening.", HUD.muteWhileListening) { [weak self] on in
              HUD.muteWhileListening = on; self?.hud?.updateMute(); SettingsWindow.refresh()
          },
+         toggle("Send after dictating", "Press Return once the text is pasted, so it sends in chats and runs in "
+                + "terminals. Off by default.",
+                GwenConfig.bool("auto_send")) { on in GwenConfig.set("auto_send", on); SettingsWindow.refresh() },
          toggle("Write times, emoji, lists", "Turn spoken formatting into text when punctuation runs locally.",
                 GwenConfig.bool("format_dictation")) { on in GwenConfig.set("format_dictation", on); SettingsWindow.refresh() },
          toggle("Keep corrected recordings", "Save audio you corrected, for later review. Off by default.",
@@ -30,18 +38,34 @@ extension SettingsWindow {
                 GwenConfig.bool("apple_speech")) { on in GwenConfig.set("apple_speech", on); SettingsWindow.refresh() }]
     }
 
+    func wakeTrainRow() -> NSView {
+        let known = WakeTrainer.phrases()
+        let a = SettingsAction { WakeTrainer.show() }
+        actions.append(a)
+        let b = PillButton(known.isEmpty ? "Train…" : "Retrain…", target: a, action: #selector(SettingsAction.fire), primary: false)
+        return card(row(words("Teach Gwen your voice", known.isEmpty
+                                  ? "Say “Hey Gwen” three times so Gwen learns how you say it."
+                                  : "Gwen hears you say it as: " + known.joined(separator: ", ") + "."), b))
+    }
+
     func translatePage() -> [NSView] {
-        var v: [NSView] = [header("Translate", "On-device with Apple's Translation framework (macOS 15+).")]
-        let choice = translateChoice()
-        for row in translateChoices() {
-            let on = row.value == choice
-            v.append(toggle(row.title, row.value == "mac" || row.value == "keyboard"
-                            ? "Follows this choice for ⌃, ⌃⇧ and the bar chip."
-                            : "Always translate into \(row.title).", on) { [weak self] _ in
-                self?.hud?.chooseTranslate(row.value)
-            })
+        let pop = NSPopUpButton(frame: .zero, pullsDown: false)
+        for (i, row) in translateChoices().enumerated() {
+            if i == 2 { pop.menu?.addItem(.separator()) }
+            pop.addItem(withTitle: row.title)
+            pop.lastItem?.representedObject = row.value
         }
-        return v
+        pop.selectItem(at: pop.indexOfItem(withRepresentedObject: translateChoice()))
+        pop.setAccessibilityLabel("Language")
+        let pick = SettingsAction { [weak self, weak pop] in
+            guard let value = pop?.selectedItem?.representedObject as? String else { return }
+            self?.hud?.chooseTranslate(value)
+        }
+        actions.append(pick)
+        pop.target = pick
+        pop.action = #selector(SettingsAction.fire)
+        return [header("Language", "On-device with Apple's Translation framework (macOS 15+)."),
+                card(row(words("Language", "The one language Gwen translates into, everywhere: ⌃⇧, speech, and the chip on the bar."), pop))]
     }
 
     func tonePage() -> [NSView] {

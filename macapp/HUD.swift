@@ -7,10 +7,9 @@ final class HUD: NSObject {
     let view = PillView()
     let statusLine = NSMenuItem(title: "Listening", action: nil, keyEquivalent: "")
     let pauseItem = NSMenuItem(title: "Pause microphone", action: #selector(togglePause), keyEquivalent: "")
-    let translateItem = NSMenuItem(title: "Translate last transcript", action: nil, keyEquivalent: "")
     let pasteAgainItem = NSMenuItem(title: "Paste last again", action: #selector(menuPasteLastAgain), keyEquivalent: "v")
     let recentTakesItem = NSMenuItem(title: "Recent takes", action: nil, keyEquivalent: "")
-    static let translateToItem = NSMenuItem(title: "Translate to", action: nil, keyEquivalent: "")
+    static let translateToItem = NSMenuItem(title: "Language", action: nil, keyEquivalent: "")
     let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
     let quitItem = NSMenuItem(title: "Quit Gwen", action: #selector(quit), keyEquivalent: "q")
     var state = "idle"
@@ -41,9 +40,8 @@ final class HUD: NSObject {
         hudVisibleInCaptures = GwenConfig.bool("hud_visible")
         let menu = NSMenu()
         statusLine.isEnabled = false
-        translateItem.isHidden = true
         pasteAgainItem.keyEquivalentModifierMask = [.control, .command]
-        for m in [statusLine, .separator(), pauseItem, HUD.micItem, HUD.translateToItem, translateItem,
+        for m in [statusLine, .separator(), pauseItem, HUD.micItem, HUD.translateToItem,
                   pasteAgainItem, recentTakesItem, .separator(),
                   settingsItem, .separator(), quitItem] {
             m.target = self
@@ -61,7 +59,7 @@ final class HUD: NSObject {
         view.onBar = { [weak self] on in self?.cursorOnBar = on }
         view.onChip = { [weak self] in self?.chipClicked() }
         view.onTranscript = { [weak self] in self?.pasteLastAgain() }
-        micFifo.spotter.onHeard = { [weak self] task, text in self?.heardLive(task, text) }
+        micFifo.spotter.onHeard = { [weak self] task, text in self?.heardLive(task, text); WakeTrainer.heard(task, text) }
         view.onTab = { [weak self] in self?.toggleDock() }
         watchClipboard()
         apply("idle")
@@ -213,6 +211,7 @@ final class HUD: NSObject {
         case "state": applyState(arg)
         case "level": pushLevel(CGFloat(Double(arg) ?? 0))
         case "live": showLive(arg)
+        case "woke": wakeChime()
         case "learned":
             if arg.isEmpty { showGuide("Learned a correction.", hideAfter: 5) }
             else { showGuide("I'll write \(arg) from now on.", hideAfter: 5) }
@@ -245,8 +244,6 @@ final class HUD: NSObject {
 
 extension HUD: NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
-        translateItem.isHidden = original.isEmpty
-        translateItem.submenu = original.isEmpty ? nil : langMenu()
         pasteAgainItem.isEnabled = Takes.last != nil
         recentTakesItem.submenu = recentTakesMenu()
         fillMicMenu()

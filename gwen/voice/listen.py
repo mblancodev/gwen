@@ -13,7 +13,7 @@ from gwen.voice.audio import (
     DICTATION_END, EndOfSpeech, FifoMic, FfmpegMic, Segmenter, bar_level, read_frame, rms, stalled, stt_up,
 )
 from gwen.voice.bridge import Hud
-from gwen.voice.dictation import live_text, polish, transcribe_dictation
+from gwen.voice.dictation import last_language, live_text, polish, transcribe_dictation
 from gwen.voice.learn import dictated_line, fixed, keep, learn, prune
 from gwen.voice.paths import FIFO, HOME
 from gwen.voice.wake import gwen_heard, strip_gwen
@@ -41,7 +41,7 @@ def run(source: str | None = None, ensure_stt: bool = True, wake: bool = True) -
         "paused": False, "dictating": False, "buf": [], "free": None, "mic": None,
         "mic_failed": threading.Event(), "fifo_off": False, "dictation_gen": 0,
         "cancel_gen": 0, "last_pcm": None, "wake_prev": "", "wake_on": False,
-        "target_bundle": "",
+        "target_bundle": "", "spoken": last_language(),
     }
     seg = Segmenter()
     stop = threading.Event()
@@ -107,6 +107,8 @@ def run(source: str | None = None, ensure_stt: bool = True, wake: bool = True) -
         live = lambda: st.get("dictation_gen") == gen and st.get("cancel_gen", 0) == st.get("cancel_at_start", 0)
         st["cancel_at_start"] = st.get("cancel_gen", 0)
         text, path, lang = transcribe_dictation(pcm, live=live)
+        if lang:
+            st["spoken"] = lang
         if st.get("dictation_gen") != gen or st.get("cancel_gen", 0) != st.get("cancel_at_start", 0):
             return
         if text is None:
@@ -155,9 +157,14 @@ def run(source: str | None = None, ensure_stt: bool = True, wake: bool = True) -
                         send("learned " + word)
             elif ev.startswith("said "):
                 text = ev[5:]
-                if st["dictating"]:
+                # Live words come from a recognizer set to one language; when the last take was in another they
+                # are garble, so the bar shows only the wave until the final text.
+                if st["dictating"] and st["spoken"] in (None, "en"):
                     send("live " + live_text(text, dictating=True, bundle=st.get("target_bundle") or None))
-                elif idle and wake and st.get("wake_on") and gwen_heard(st.get("wake_prev", ""), text):
+            elif ev.startswith("heard "):  # heard <task> <text>: everything the recognizer writes, idle too
+                text = ev.split(" ", 2)[2] if ev.count(" ") >= 2 else ""
+                if idle and wake and st.get("wake_on") and gwen_heard(st.get("wake_prev", ""), text):
+                    send("woke")  # a small sound: it landed, start talking
                     start_dictation(True, voice=True)
                 st["wake_prev"] = text
             elif ev.startswith("input "):  # the menu's Microphone: saved by Gwen.app; reopen with it

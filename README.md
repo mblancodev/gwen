@@ -32,7 +32,7 @@ only thing that leaves the Mac, and it is off by default.
 
 ![Gwen Settings window showing Dictation preferences](assets/screenshots/settings.png)
 
-*Native Settings — Dictation, Translate, Shortcuts, Capture*
+*Native Settings — Dictation, Language, Shortcuts, Capture*
 
 ## Status
 
@@ -40,7 +40,7 @@ Shipped in this repo:
 
 - **HUD** — menu bar + bottom pill (`macapp/`), idle language chip, native Settings
 - **Listener** — `gwen listen`: Mic FIFO → local whisper → punctuation → paste
-- **Wake / learn** — Hey Gwen; learned words under `~/.gwen/`
+- **Wake / learn** — Hey Gwen, taught in your voice on first run (retrain in Settings → Dictation); learned words under `~/.gwen/`
 - **Translate** — ⌃⇧ selection/clipboard with in-place replace, AX verify, cancel/race hardening
 - **Site** — [site/index.html](site/index.html) (Funnel/Geist dark UI, Gwen-only MIT/local copy)
 - **Mocks** — scripted HUD/HTML demos when you want a dry run
@@ -84,9 +84,9 @@ Or compile by hand:
 
 ### Gwen Settings (native)
 
-Dictation · Translate · Shortcuts (read-only) · Capture (show bar in screenshots)
+Dictation · Language · Shortcuts (read-only) · Capture (show bar in screenshots)
 
-Prefs: `~/.gwen/config.json` plus `translateTo` in app defaults. Idle bar chip shows Mac / Key / language and opens the same Translate-to menu.
+Prefs: `~/.gwen/config.json` plus `translateTo` in app defaults. Idle bar chip shows Mac / Key / language and opens the same Language menu.
 
 ### Polish with an agent (opt-in)
 

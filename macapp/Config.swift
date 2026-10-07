@@ -17,7 +17,7 @@ enum GwenConfig {
 
     static func defaults() -> [String: Any] {
         ["learn_from_edits": true, "format_dictation": false, "keep_corrected": false,
-         "apple_speech": false, "polish": false, "hud_visible": false]
+         "apple_speech": false, "polish": false, "hud_visible": false, "auto_send": false, "wake": true]
     }
 
     static func bool(_ key: String) -> Bool {

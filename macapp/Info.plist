@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>Gwen</string>
+	<key>CFBundleDisplayName</key>
+	<string>Gwen</string>
+	<key>CFBundleIdentifier</key>
+	<string>app.gwen.hud</string>
+	<key>CFBundleVersion</key>
+	<string>0.1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1</string>
+	<key>CFBundleExecutable</key>
+	<string>Gwen</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>app.gwen.hud</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>gwen</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Gwen listens when you hold Control to dictate.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Gwen shows your words as you dictate.</string>
+</dict>
+</plist>

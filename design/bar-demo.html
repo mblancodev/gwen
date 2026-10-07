@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gwen · bar demo</title>
+<style>
+  :root {
+    --gwen: #D9364F;
+    --gwen-soft: #ea6377;
+    --bg: #0a0a0c;
+    --desk: #1a1b22;
+    --pill: rgba(28, 28, 32, 0.92);
+    --text: #f4f0e6;
+    --muted: rgba(244, 240, 230, 0.55);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  header h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  header h1 span { color: var(--gwen); }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    appearance: none; border: 0; border-radius: 999px;
+    padding: 7px 14px; font: inherit; font-size: 12px; font-weight: 550;
+    background: rgba(255,255,255,.08); color: var(--text); cursor: pointer;
+  }
+  button:hover { background: rgba(255,255,255,.14); }
+  button.active { background: var(--gwen); color: #fff; }
+  button.ghost { background: transparent; color: var(--muted); }
+  main {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    padding: 40px 24px 56px; position: relative;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 100%, rgba(217,54,79,.12), transparent 60%),
+      linear-gradient(180deg, #12131a, var(--desk));
+  }
+  .desk-label {
+    position: absolute; top: 28px; left: 50%; transform: translateX(-50%);
+    color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .notes {
+    position: absolute; top: 72px; width: min(420px, 90vw);
+    background: #f7f3e8; color: #1c1c1e; border-radius: 10px; padding: 18px 20px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.35); min-height: 140px;
+  }
+  .notes h2 { font-size: 13px; font-weight: 600; color: #6b6570; margin-bottom: 8px; }
+  .notes p { font-size: 16px; line-height: 1.45; white-space: pre-wrap; }
+  .notes .caret { display: inline-block; width: 2px; height: 1em; background: var(--gwen); vertical-align: -2px; margin-left: 1px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Bottom bar — approximate PillView */
+  .stage { width: 100%; display: flex; justify-content: center; margin-top: auto; }
+  .pill-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .hint {
+    font-size: 11px; color: var(--muted); opacity: 0; transition: opacity .2s;
+    max-width: 420px; text-align: center;
+  }
+  .hint.on { opacity: 1; }
+  .pill {
+    display: flex; align-items: center; gap: 10px;
+    min-height: 40px; max-width: 560px;
+    padding: 8px 14px;
+    background: var(--pill);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 22px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .pill.tight { padding: 8px 12px; }
+  .bars { display: flex; align-items: center; gap: 3px; height: 16px; }
+  .bars i {
+    display: block; width: 3px; border-radius: 2px; background: var(--gwen);
+    height: 20%; transition: height .06s linear;
+  }
+  .bars.sine i { background: var(--gwen-soft); }
+  .bars.idle i { background: rgba(255,255,255,.25); height: 18% !important; }
+  .live {
+    font-size: 13px; font-weight: 500; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 360px; min-width: 0;
+  }
+  .live:empty { display: none; }
+  .chip {
+    font-size: 11px; font-weight: 600; color: #fff;
+    background: rgba(217,54,79,.85); border-radius: 10px;
+    padding: 3px 10px 3px 8px; cursor: default; flex-shrink: 0;
+  }
+  .chip::after { content: " ▾"; opacity: .7; }
+  .info {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.35); color: rgba(255,255,255,.55);
+    font-size: 10px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0;
+  }
+  footer {
+    padding: 12px 24px; border-top: 1px solid rgba(255,255,255,.06);
+    color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>Gwen</span> · bar demo</h1>
+  <div class="controls">
+    <button type="button" data-scene="dictate" class="active">Dictate</button>
+    <button type="button" data-scene="translate">Translate speech</button>
+    <button type="button" data-scene="selection">Translate selection</button>
+    <button type="button" data-scene="clean">Cleaning</button>
+    <button type="button" class="ghost" id="replay">Replay</button>
+  </div>
+</header>
+<main>
+  <p class="desk-label">Notes · frontmost app</p>
+  <div class="notes" aria-live="polite">
+    <h2>Untitled</h2>
+    <p id="paste"><span class="caret"></span></p>
+  </div>
+  <div class="stage">
+    <div class="pill-wrap">
+      <div class="hint" id="hint"></div>
+      <div class="pill tight" id="pill" role="status" aria-label="Gwen">
+        <div class="bars idle" id="bars" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="live" id="live"></div>
+        <div class="chip" id="chip" hidden>Español</div>
+        <div class="info" title="hint">i</div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer>
+  <span>Design mock for screenshots — no microphone.</span>
+  <span><code>gwen mock bar</code> · cherry <code>#D9364F</code></span>
+</footer>
+<script>
+const bars = [...document.querySelectorAll("#bars i")];
+const live = document.getElementById("live");
+const chip = document.getElementById("chip");
+const hint = document.getElementById("hint");
+const paste = document.getElementById("paste");
+const pill = document.getElementById("pill");
+const barEl = document.getElementById("bars");
+let timer, raf, scene = "dictate", t0 = 0;
+
+const SCENES = {
+  dictate: {
+    hint: "Let go of ⌃ to paste · tap ⌃ to cancel",
+    chip: "English",
+    words: "the login fix is ready for review and I will pick up the flaky test right after lunch today".split(" "),
+    final: "The login fix is ready for review, and I will pick up the flaky test right after lunch today.",
+    cleanMs: 900,
+  },
+  translate: {
+    hint: "Stops when you stop talking · tap ⌃⇧ to stop · tap the language to change it",
+    chip: "Español",
+    words: "ship the checkout redesign on friday".split(" "),
+    final: "Envía el rediseño del checkout el viernes.",
+    cleanMs: 1100,
+    translating: true,
+  },
+  selection: {
+    hint: "Tap ⌃⇧ or Esc to stop · tap the language to change it",
+    chip: "Français",
+    words: [],
+    selection: "Needs a second pass on the empty state.",
+    final: "Il faut une deuxième passe sur l'état vide.",
+    cleanMs: 800,
+    translating: true,
+  },
+  clean: {
+    hint: "Tap ⌃ to cancel",
+    chip: "English",
+    words: "um so the pie test suite is green now".split(" "),
+    final: "So the pytest suite is green now.",
+    cleanMs: 1400,
+  },
+};
+
+function setLevels(active, sine) {
+  barEl.classList.toggle("idle", !active && !sine);
+  barEl.classList.toggle("sine", !!sine);
+  bars.forEach((el, i) => {
+    if (!active && !sine) { el.style.height = "18%"; return; }
+    const wave = sine
+      ? 0.35 + 0.45 * Math.abs(Math.sin(t0 * 0.008 + i * 0.9))
+      : 0.25 + 0.55 * Math.abs(Math.sin(t0 * 0.012 + i * 1.4));
+    el.style.height = Math.round(wave * 100) + "%";
+  });
+}
+
+function tick(ts) {
+  t0 = ts;
+  const mode = pill.dataset.mode;
+  setLevels(mode === "dictating" || mode === "translating", mode === "cleaning");
+  raf = requestAnimationFrame(tick);
+}
+
+function setMode(mode) {
+  pill.dataset.mode = mode;
+  pill.classList.toggle("tight", ["dictating", "cleaning", "idle", "translating"].includes(mode));
+}
+
+function showHint(text) {
+  hint.textContent = text || "";
+  hint.classList.toggle("on", !!text);
+}
+
+function clearTimers() {
+  clearTimeout(timer);
+  cancelAnimationFrame(raf);
+}
+
+function typePaste(text) {
+  paste.innerHTML = "";
+  let i = 0;
+  const step = () => {
+    if (i <= text.length) {
+      paste.innerHTML = text.slice(0, i) + '<span class="caret"></span>';
+      i++;
+      timer = setTimeout(step, 18);
+    }
+  };
+  step();
+}
+
+function runScene(name) {
+  clearTimers();
+  scene = name;
+  document.querySelectorAll("[data-scene]").forEach((b) => b.classList.toggle("active", b.dataset.scene === name));
+  const s = SCENES[name];
+  live.textContent = "";
+  chip.hidden = !s.chip;
+  chip.textContent = s.chip || "";
+  showHint(s.hint);
+  paste.innerHTML = s.selection
+    ? s.selection + '<span class="caret"></span>'
+    : '<span class="caret"></span>';
+  setMode(s.translating ? "translating" : "dictating");
+  raf = requestAnimationFrame(tick);
+
+  if (s.selection) {
+    live.textContent = "Select text to translate";
+    timer = setTimeout(() => {
+      setMode("cleaning");
+      live.textContent = "";
+      showHint("Tap ⌃ to cancel");
+      timer = setTimeout(() => {
+        setMode("idle");
+        setLevels(false);
+        showHint("");
+        typePaste(s.final);
+      }, s.cleanMs);
+    }, 1200);
+    return;
+  }
+
+  let i = 0;
+  const speak = () => {
+    if (i < s.words.length) {
+      i++;
+      live.textContent = s.words.slice(0, i).join(" ");
+      timer = setTimeout(speak, 220);
+    } else {
+      setMode("cleaning");
+      live.textContent = "";
+      showHint("Tap ⌃ to cancel");
+      timer = setTimeout(() => {
+        setMode("idle");
+        setLevels(false);
+        showHint("");
+        chip.hidden = true;
+        typePaste(s.final);
+      }, s.cleanMs);
+    }
+  };
+  timer = setTimeout(speak, 400);
+}
+
+document.querySelectorAll("[data-scene]").forEach((b) => b.addEventListener("click", () => runScene(b.dataset.scene)));
+document.getElementById("replay").addEventListener("click", () => runScene(scene));
+
+const params = new URLSearchParams(location.search);
+runScene(params.get("scene") || "dictate");
+</script>
+</body>
+</html>

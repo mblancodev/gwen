@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gwen Settings</title>
+<style>
+  :root {
+    --gwen: #D9364F;
+    --bg: #000;
+    --card: #141416;
+    --line: rgba(255,255,255,.08);
+    --text: #f4f0e6;
+    --muted: rgba(244,240,230,.55);
+    --side: 168px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh; background: #111; color: var(--text);
+    font: 13px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    display: grid; place-items: center; padding: 32px 16px;
+  }
+  .window {
+    width: min(640px, 100%); height: min(520px, 90vh);
+    background: var(--bg); border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 30px 80px rgba(0,0,0,.55);
+    display: grid; grid-template-columns: var(--side) 1fr;
+  }
+  .traffic {
+    grid-column: 1 / -1; height: 40px; display: flex; align-items: center; gap: 7px;
+    padding: 0 14px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, #1a1a1c, #0c0c0e);
+  }
+  .traffic i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .traffic i:nth-child(1) { background: #ff5f57; }
+  .traffic i:nth-child(2) { background: #febc2e; }
+  .traffic i:nth-child(3) { background: #28c840; }
+  .traffic span { margin-left: 10px; font-size: 12px; color: var(--muted); font-weight: 500; }
+  nav {
+    border-right: 1px solid var(--line); padding: 12px 8px; background: #070708;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  nav button {
+    appearance: none; border: 0; background: transparent; color: var(--muted);
+    text-align: left; padding: 8px 10px; border-radius: 8px; cursor: pointer;
+    font: inherit; font-weight: 500; display: flex; align-items: center; gap: 8px;
+  }
+  nav button:hover { background: rgba(255,255,255,.05); color: var(--text); }
+  nav button.active { background: rgba(217,54,79,.18); color: #fff; }
+  nav button .sym { width: 18px; opacity: .85; }
+  .page { padding: 22px 24px; overflow: auto; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .lead { color: var(--muted); font-size: 12px; margin-bottom: 18px; max-width: 38em; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .card h2 { font-size: 13px; font-weight: 550; }
+  .card p { font-size: 11px; color: var(--muted); margin-top: 3px; max-width: 28em; }
+  .switch {
+    width: 40px; height: 24px; border-radius: 999px; background: #3a3a3e;
+    position: relative; flex-shrink: 0; cursor: pointer; border: 0;
+  }
+  .switch.on { background: var(--gwen); }
+  .switch::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; border-radius: 50%; background: #fff;
+    transition: left .15s ease;
+  }
+  .switch.on::after { left: 18px; }
+  select, .pill {
+    appearance: none; background: #222; color: var(--text); border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 12px;
+  }
+  .keys { display: grid; gap: 8px; }
+  .key-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--card); border-radius: 10px; border: 1px solid var(--line);
+  }
+  kbd {
+    font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #222; border: 1px solid var(--line); border-radius: 6px;
+    padding: 4px 7px; color: #fff;
+  }
+  .note { font-size: 11px; color: var(--muted); margin-top: 14px; }
+  .badge {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--gwen); background: rgba(217,54,79,.15);
+    border-radius: 999px; padding: 3px 8px; margin-left: 8px; vertical-align: middle;
+  }
+  footer.cap {
+    margin-top: 8px; font-size: 11px; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="window" role="dialog" aria-label="Gwen Settings">
+  <div class="traffic"><i></i><i></i><i></i><span>Gwen Settings</span></div>
+  <nav aria-label="Sections">
+    <button type="button" class="active" data-sec="dictation"><span class="sym">🎙</span> Dictation</button>
+    <button type="button" data-sec="translate"><span class="sym">🌐</span> Translate</button>
+    <button type="button" data-sec="shortcuts"><span class="sym">⌨</span> Shortcuts</button>
+    <button type="button" data-sec="capture"><span class="sym">◎</span> Capture</button>
+  </nav>
+  <div class="page" id="page"></div>
+</div>
+<script>
+const state = {
+  learn_from_edits: true,
+  format_dictation: false,
+  keep_corrected: false,
+  polish: false,
+  apple_speech: false,
+  translateTo: "mac",
+  hud_visible: false,
+};
+
+const LANGS = [
+  ["mac", "Mac language"],
+  ["keyboard", "Keyboard language"],
+  ["en", "English"],
+  ["es", "Spanish"],
+  ["fr", "French"],
+  ["it", "Italian"],
+  ["pt", "Portuguese"],
+  ["de", "German"],
+];
+
+function toggle(key) {
+  return `<button type="button" class="switch ${state[key] ? "on" : ""}" data-key="${key}" aria-pressed="${state[key]}"></button>`;
+}
+
+function card(title, detail, control) {
+  return `<div class="card"><div><h2>${title}</h2><p>${detail}</p></div>${control}</div>`;
+}
+
+const pages = {
+  dictation: () => `
+    <h1>Dictation</h1>
+    <p class="lead">Local whisper, punctuation, and optional polish — all on this Mac.</p>
+    ${card("Learn from fixes after paste", "Reads the field back while you're in it; the same spelling fixed twice becomes a rule. Nothing is logged or sent.", toggle("learn_from_edits"))}
+    ${card("Write times, emoji and lists", "“3.30pm” → 3:30 pm, “thumbs up emoji” → 👍, “first, second, third” as a list.", toggle("format_dictation"))}
+    ${card("Keep recordings I corrected", "Newest 50, for 30 days, under ~/.gwen/voice/corrected (planned).", toggle("keep_corrected"))}
+    ${card("Optional remote polish", "Off by default. When on, a dictation of four+ words may leave the Mac for filler cleanup.", toggle("polish"))}
+    ${card("Apple Speech", "On macOS 26, use the Mac's own speech model instead of local Whisper.", toggle("apple_speech"))}
+    <p class="note">Wireframe only — toggles flip in-page; nothing is saved yet.</p>`,
+  translate: () => `
+    <h1>Translate</h1>
+    <p class="lead">On-device (Apple Translation). One language for ⌃⇧, speech translate, and cross-language dictation.</p>
+    ${card("Translate to", "Mac language, keyboard language, or one of the six supported languages.",
+      `<select id="lang">${LANGS.map(([v, t]) => `<option value="${v}" ${state.translateTo===v?"selected":""}>${t}</option>`).join("")}</select>`)}
+    <p class="note">Needs macOS 15+. Before that, ⌃⇧ says so.</p>`,
+  shortcuts: () => `
+    <h1>Shortcuts</h1>
+    <p class="lead">Fixed for now. Not editable in v1.</p>
+    <div class="keys">
+      <div class="key-row"><span>Dictate</span><span><kbd>Hold ⌃</kbd></span></div>
+      <div class="key-row"><span>Dictate hands-free</span><span><kbd>⌃⌃</kbd> or “Hey Gwen”</span></div>
+      <div class="key-row"><span>Translate selection / clipboard</span><span><kbd>Tap ⌃⇧</kbd></span></div>
+      <div class="key-row"><span>Translate what you say</span><span><kbd>Hold ⌃</kbd> + <kbd>⇧⇧</kbd></span></div>
+      <div class="key-row"><span>Cancel (paste nothing)</span><span><kbd>Tap ⌃</kbd></span></div>
+    </div>`,
+  capture: () => `
+    <h1>Capture</h1>
+    <p class="lead">For demos, screenshots, and Twitter clips.</p>
+    ${card("Show in screenshots and screen shares", "Off by default so a call never sees the bar. On for demos and product shots.", toggle("hud_visible"))}
+    <p class="cap">Design mock — mirrors native Gwen Settings.</p>`,
+};
+
+function render(sec) {
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("active", b.dataset.sec === sec));
+  document.getElementById("page").innerHTML = pages[sec]();
+  document.querySelectorAll(".switch").forEach((el) => {
+    el.addEventListener("click", () => {
+      const k = el.dataset.key;
+      state[k] = !state[k];
+      el.classList.toggle("on", state[k]);
+      el.setAttribute("aria-pressed", state[k]);
+    });
+  });
+  const lang = document.getElementById("lang");
+  if (lang) lang.addEventListener("change", () => { state.translateTo = lang.value; });
+}
+
+document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => render(b.dataset.sec)));
+render(new URLSearchParams(location.search).get("sec") || "dictation");
+</script>
+</body>
+</html>

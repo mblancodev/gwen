@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.pytest_cache/
+
+# Runtime data in ~/.gwen/; Gwen.app build in dist/ (symlinked to ~/.gwen/Gwen.app)
+*.o
+.DS_Store
+
+# Local Gwen.app build (gwen build → dist/Gwen.app)
+dist/

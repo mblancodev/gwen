@@ -183,13 +183,13 @@ for hands-free. Ctrl-C to quit.
 
 <section class="install" id="install"><div class="wrap">
   <div class="duo rv"><svg class="gwen"><use href="#robot"/></svg></div>
-  <h2 class="h2 rv">Clone Gwen. Build the bar.</h2>
-  <p class="lede rv" style="margin-inline:auto">Runs on macOS 13 and later. Translation needs macOS 15. Grant Accessibility on first run. <code>gwen listen</code> (and <code>setup</code> / <code>hud</code>) starts local Whisper for you.</p>
-  <div class="term rv"><button class="btn ghost small copy" id="copy">Copy</button><pre id="cmd"><span class="a">$</span> <b>git clone https://github.com/mblancodev/gwen && cd gwen</b>
-<span class="a">$</span> <b>./bin/gwen build</b>   <span class="c"># → ~/.gwen/Gwen.app</span>
-<span class="a">$</span> <b>./bin/gwen hud</b></pre></div>
+  <h2 class="h2 rv">One line. Any Mac.</h2>
+  <p class="lede rv" style="margin-inline:auto">Runs on macOS 13 and later. Translation needs macOS 15. Grant Accessibility on first run. <code>gwen listen</code> (and <code>setup</code> / <code>hud</code>) starts local Whisper for you. Or download the disk image (Apple silicon and Intel): it is not notarized, so macOS asks you to allow it under Privacy &amp; Security the first time.</p>
+  <div class="term rv"><button class="btn ghost small copy" id="copy">Copy</button><pre id="cmd"><span class="a">$</span> <b>curl -fsSL https://gwen-chi.vercel.app/install.sh | sh</b>
+<span class="c"># clones to ~/.gwen/src, builds Gwen.app, starts it at login</span></pre></div>
   <div class="cta rv">
-    <a class="btn primary" href="https://github.com/mblancodev/gwen">View on GitHub</a>
+    <a class="btn primary" href="https://github.com/mblancodev/gwen/releases/latest/download/Gwen.dmg">Download for Mac</a>
+    <a class="btn ghost" href="https://github.com/mblancodev/gwen">View on GitHub</a>
     <a class="bmc" href="https://www.buymeacoffee.com/manuelblancodev" target="_blank" rel="noopener noreferrer" aria-label="Buy me a coffee">
       <img src="buymeacoffee.svg" width="217" height="48" alt="Buy me a coffee">
     </a>

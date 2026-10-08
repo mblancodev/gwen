@@ -183,7 +183,7 @@ tabs.forEach(t => {
 });
 
 $("copy").addEventListener("click", async () => {
-  await navigator.clipboard.writeText("git clone https://github.com/mblancodev/gwen && cd gwen\n./bin/gwen build\n./bin/gwen hud");
+  await navigator.clipboard.writeText("curl -fsSL https://gwen-chi.vercel.app/install.sh | sh");
   $("copy").textContent = "Copied";
   setTimeout(() => $("copy").textContent = "Copy", 1500);
 });

@@ -9,6 +9,7 @@ default (whisper.cpp on this Mac, Apple's on-device Translation).
 | --- | --- |
 | Install and start Whisper on 127.0.0.1:2022 | `./bin/gwen setup` |
 | Compile the app into `~/.gwen/Gwen.app` | `./bin/gwen build` |
+| Universal `dist/Gwen.dmg` (Apple silicon + Intel) | `./bin/gwen bundle` |
 | Menu bar + bottom bar | `./bin/gwen hud` |
 | The listener (mic, Whisper, paste) | `./bin/gwen listen` (`--no-wake` to skip "Hey Gwen") |
 | Native Settings | `./bin/gwen settings` |
@@ -40,6 +41,8 @@ There is no test suite. Check a change with the matching mock, then by hand.
 | Whisper install and start | `gwen/setup/voice.py` | |
 | A demo scene | `gwen/mocks/bar.py` and its siblings | |
 | The marketing site | `site/index.html` | |
+| The one-line installer (`curl … \| sh`, served by the site) | `site/install.sh`, then `gwen/setup/install.py` | |
+| The disk image, and the app installing itself on first open | `gwen/setup/bundle.py`, `macapp/HUD+URL.swift` | `installFromBundle` |
 | How the site deploys (Vercel serves `site/` as is, no build) | `vercel.json` | |
 
 ## Invariants

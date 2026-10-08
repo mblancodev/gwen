@@ -49,13 +49,26 @@ Whisper installs and starts with `gwen setup` / `gwen listen` / `gwen hud` (Voic
 
 Other apps can drive Gwen through `gwen://` (see below).
 
+## Install
+
+```sh
+curl -fsSL https://gwen-chi.vercel.app/install.sh | sh
+```
+
+Clones Gwen into `~/.gwen/src` (`GWEN_DIR` picks another folder), compiles Gwen.app on your Mac (Apple silicon or
+Intel) and starts it at login. Run it again to update. Needs Apple's command line tools; it offers to install them.
+
+Or use the disk image from `gwen bundle`: drag Gwen to Applications and open it. The first open sets up the login
+listener and Whisper; it uses the Mac's `python3`, so it needs the command line tools too. The image is not
+notarized: on first open macOS asks you to allow it under System Settings → Privacy & Security.
+
 ## Build & run
 
 ```sh
 ./bin/gwen setup          # install + start Whisper on 127.0.0.1:2022
 ./bin/gwen build          # swiftc → dist/Gwen.app (~/.gwen/Gwen.app → symlink)
 ./bin/gwen install        # CLI + login listener (Gwen-only)
-./bin/gwen bundle         # dist/Gwen.app + Gwen.dmg
+./bin/gwen bundle         # universal dist/Gwen.app + Gwen.dmg (Apple silicon + Intel)
 ./bin/gwen hud            # menu bar + bottom pill (also ensures Whisper)
 ./bin/gwen settings       # native Gwen Settings
 ./bin/gwen listen         # Mic FIFO + whisper + paste (ensures Whisper)

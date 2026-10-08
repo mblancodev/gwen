@@ -79,13 +79,13 @@ def load_agent(label, plist):
 def install():
     print("Installing Gwen", flush=True)
     ok = say(sys.version_info >= (3, 9), "Python %s" % sys.version.split()[0])
-    swift = sh("xcode-select", "-p").returncode == 0 and bool(shutil.which("swiftc"))
+    swift = hud_mod.BUNDLED or (sh("xcode-select", "-p").returncode == 0 and bool(shutil.which("swiftc")))
     ok &= say(swift, "Swift compiler", None if swift else "run: xcode-select --install")
     if not ok:
         print("\nFix the ✗ items above, then run `gwen install` again.", flush=True)
         return 1
 
-    if not say(hud_mod.ensure_hud(force=False), "Gwen.app built (%s)" % hud_mod.APP):
+    if not say(hud_mod.ensure_hud(force=False), "Gwen.app (%s)" % hud_mod.APP):
         return 1
 
     os.makedirs(os.path.dirname(LINK), exist_ok=True)
@@ -115,6 +115,7 @@ def install():
         "EnvironmentVariables": {
             "PATH": agent_path_env(),
             "PYTHONUNBUFFERED": "1",
+            "PYTHONDONTWRITEBYTECODE": "1",  # a __pycache__ inside Gwen.app breaks its signature
             "LANG": "en_US.UTF-8",
         },
         "StandardOutPath": os.path.join(LOGS, "listen.log"),

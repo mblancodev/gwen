@@ -1,7 +1,8 @@
 """`gwen bundle`: self-contained Gwen.app + Gwen.dmg.
 
-Swift HUD binary plus Gwen's Python sources in Contents/Resources/gwen.
-Uses the Mac's /usr/bin/python3. DMG shows Gwen.app beside Applications.
+Universal (Apple silicon + Intel) Swift HUD binary plus Gwen's Python sources in Contents/Resources/gwen.
+Uses the Mac's /usr/bin/python3. DMG shows Gwen.app beside Applications; opened from there with no login
+listener yet, the app installs itself (macapp/HUD+URL.swift).
 """
 from __future__ import annotations
 
@@ -83,7 +84,7 @@ def bundle(out=None):
         print("Can't replace %s: check ownership (sudo chown -R \"$(id -un)\" %s)" % (app, out), flush=True)
         return 1
 
-    if not ensure_hud(force=True):
+    if not ensure_hud(force=True, universal=True):
         return 1
     # ensure_hud writes ROOT/dist/Gwen.app — same as app when out==dist
     if os.path.realpath(app) != os.path.realpath(os.path.join(ROOT, "dist", "Gwen.app")):
@@ -127,7 +128,7 @@ def bundle(out=None):
     dmg = make_dmg(app, out)
     say(True, "built %s" % dmg)
     print("\nDone: %s and %s." % (app, dmg), flush=True)
-    print("Drag Gwen.app to Applications, then from a checkout: gwen install", flush=True)
+    print("Drag Gwen.app to Applications and open it: the first open installs it.", flush=True)
     return 0
 
 

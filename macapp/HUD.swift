@@ -56,6 +56,7 @@ final class HUD: NSObject {
         hintPanel.contentView = hint
         guidePanel.contentView = guide
         view.onHint = { [weak self] on in self?.showHint(on) }
+        view.onResize = { [weak self] in self?.resizeBarInPlace() }
         view.onBar = { [weak self] on in self?.cursorOnBar = on }
         view.onChip = { [weak self] in self?.chipClicked() }
         view.onTranscript = { [weak self] in self?.pasteLastAgain() }

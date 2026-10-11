@@ -1,6 +1,10 @@
 // Gwen bottom bar: idle (language chip) / dictating / cleaning / translating / transcript.
 import AppKit
 
+extension UserDefaults {
+    @objc dynamic var infoOff: Bool { bool(forKey: "infoOff") }  // observable: the key of PillView.barDefaults
+}
+
 final class PillView: NSView {
     var mode = "idle" { didSet { needsDisplay = true; pinned = false; onHint?(false) } }
     var onHint: ((Bool) -> Void)?
@@ -49,7 +53,25 @@ final class PillView: NSView {
     var tight: Bool { ["dictating", "cleaning", "idle"].contains(mode) }
     var pad: CGFloat { tight ? 12 : 16 }
     var infoRect: NSRect { NSRect(x: bounds.maxX - pad - 16, y: pillTop - 27, width: 16, height: 16) }
-    var hintWidth: CGFloat { (hint.isEmpty ? 0 : 24) + (showsChip ? chipWidth + 8 : 0) }
+    /// The ⓘ can be turned off, for Finn's bar and Gwen's alike: the small × above it (shown while the pointer is on
+    /// the bar), and back on in either app's Settings. One setting in a suite both apps read.
+    static let barDefaults = UserDefaults(suiteName: "finn-gwen.bar")
+    static var infoOff: Bool {
+        get { barDefaults?.bool(forKey: "infoOff") ?? false }
+        set { barDefaults?.set(newValue, forKey: "infoOff") }
+    }
+    var showsInfo: Bool { !hint.isEmpty && !PillView.infoOff }
+    var onResize: (() -> Void)?  // the ⓘ went or came back: the bar takes its new width at once
+    var infoWatch: NSKeyValueObservation?  // whoever changed it: this bar's ×, the other app's, or either Settings
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        infoWatch = PillView.barDefaults?.observe(\.infoOff) { [weak self] _, _ in
+            DispatchQueue.main.async { self?.needsDisplay = true; self?.onResize?() }
+        }
+    }
+    var over = false { didSet { needsDisplay = true } }  // the pointer is on the bar: the × shows
+    var infoOffRect: NSRect { NSRect(x: infoRect.midX - 4, y: infoRect.maxY, width: 8, height: 8) }
+    var hintWidth: CGFloat { (showsInfo ? 24 : 0) + (showsChip ? chipWidth + 8 : 0) }
     var showsChip: Bool { !chip.isEmpty && (mode == "transcript" || mode == "translating" || mode == "dictating" || mode == "idle") }
     var chipText: NSAttributedString {
         NSAttributedString(string: chip + " ▾", attributes: [.font: PillView.chipFont, .foregroundColor: NSColor.white])
@@ -57,7 +79,7 @@ final class PillView: NSView {
     var chipWidth: CGFloat { ceil(chipText.size().width) + 14 }
     /// Idle has no ⓘ: chip hugs the right pad. Slim idle bar centers the chip vertically.
     var chipRect: NSRect {
-        let infoGap: CGFloat = hint.isEmpty ? 0 : 24
+        let infoGap: CGFloat = showsInfo ? 24 : 0
         let y = mode == "idle" ? max(2, (pillTop - 20) / 2) : pillTop - 29
         return NSRect(x: bounds.maxX - pad - infoGap - chipWidth, y: y, width: chipWidth, height: 20)
     }
@@ -72,19 +94,25 @@ final class PillView: NSView {
     }
     override func mouseEntered(with event: NSEvent) {
         if event.trackingArea?.userInfo?["which"] as? String == "info" {
-            if !pinned && !hint.isEmpty { onHint?(true) }
-        } else { onBar?(true) }
+            if !pinned && showsInfo { onHint?(true) }
+        } else { over = true; onBar?(true) }
     }
     override func mouseExited(with event: NSEvent) {
         if event.trackingArea?.userInfo?["which"] as? String == "info" {
             if !pinned { onHint?(false) }
-        } else { onBar?(false) }
+        } else { over = false; onBar?(false) }
     }
     override func mouseDown(with event: NSEvent) {
         if tabHit(event) { return tabDown() }
         if showsChip && chipRect.contains(convert(event.locationInWindow, from: nil)) { return onChip?() ?? () }
         if mode == "transcript" { return onTranscript?() ?? () }
-        guard !hint.isEmpty, infoRect.insetBy(dx: -4, dy: -4).contains(convert(event.locationInWindow, from: nil)) else { return }
+        if showsInfo && infoOffRect.insetBy(dx: -3, dy: -2).contains(convert(event.locationInWindow, from: nil)) {
+            PillView.infoOff = true  // infoWatch resizes the bar
+            pinned = false
+            onHint?(false)
+            return needsDisplay = true
+        }
+        guard showsInfo, infoRect.insetBy(dx: -4, dy: -4).contains(convert(event.locationInWindow, from: nil)) else { return }
         pinned.toggle()
         onHint?(pinned)
     }
@@ -205,10 +233,10 @@ final class PillView: NSView {
         if sine {
             let wave = NSBezierPath()
             let amp: CGFloat = mode == "cleaning" || mode == "translating" ? 5 : 3
-            let w: CGFloat = max(30, stacked ? bounds.width - 2 * pad - (hint.isEmpty ? 0 : 24) : 30)
+            let w: CGFloat = max(30, stacked ? bounds.width - 2 * pad - (showsInfo ? 24 : 0) : 30)
             // Chip left-aligns the wave; else ⓘ or center.
             let x0: CGFloat = labelString().length == 0
-                ? (showsChip ? pad : hint.isEmpty ? (bounds.width - w) / 2 : max(pad, infoRect.minX - 6 - w)) : pad
+                ? (showsChip ? pad : !showsInfo ? (bounds.width - w) / 2 : max(pad, infoRect.minX - 6 - w)) : pad
             let n = Int(w)
             for i in 0...n {
                 let t = CGFloat(i) / CGFloat(max(n, 1))
@@ -239,10 +267,19 @@ final class PillView: NSView {
         let s = labelString()
         let textX = stacked ? pad : (tight ? pad + 36 : PillView.iconWidth)
         let textW = stacked ? bounds.width - 2 * pad : bounds.width - textX - (tight ? pad : 20) - hintWidth
-        if !hint.isEmpty {
+        if showsInfo {
             NSImage(systemSymbolName: "info.circle", accessibilityDescription: nil)?
                 .withSymbolConfiguration(.init(pointSize: 13, weight: .medium).applying(.init(paletteColors: [NSColor(white: 1, alpha: 0.6)])))?
                 .draw(in: infoRect)
+            if over {  // the × that turns the ⓘ off
+                let x = NSBezierPath(), r = infoOffRect.insetBy(dx: 1.5, dy: 1.5)
+                x.move(to: NSPoint(x: r.minX, y: r.minY)); x.line(to: NSPoint(x: r.maxX, y: r.maxY))
+                x.move(to: NSPoint(x: r.minX, y: r.maxY)); x.line(to: NSPoint(x: r.maxX, y: r.minY))
+                NSColor(white: 1, alpha: 0.6).setStroke()
+                x.lineWidth = 1.2
+                x.lineCapStyle = .round
+                x.stroke()
+            }
         }
         if showsChip {
             let rad: CGFloat = 10

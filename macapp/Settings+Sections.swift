@@ -184,7 +184,10 @@ extension SettingsWindow {
         [header("Capture", "For demos and Twitter clips."),
          toggle("Show bar in screenshots and screen shares",
                 "Off by default so a call never sees Gwen's bar. On for demos.",
-                hudVisibleInCaptures) { [weak self] on in self?.hud?.setHudVisible(on) }]
+                hudVisibleInCaptures) { [weak self] on in self?.hud?.setHudVisible(on) },
+         toggle("Show the ⓘ on the bar", "The key hints for what the bar is doing. Off: the × above it was "
+                + "clicked, here or in Finn; it is one setting for both bars.",
+                !PillView.infoOff) { on in PillView.infoOff = !on }]
     }
 
     func header(_ title: String, _ text: String) -> NSView {

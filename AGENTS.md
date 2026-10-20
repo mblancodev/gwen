@@ -1,5 +1,8 @@
 # Gwen
 
+> **Archived 2026-10-19.** Gwen lives inside Finn now (`personal/apps/finn`, Finn.app's Gwen character).
+> Don't build here; build Gwen features in Finn.
+
 Dictation and translation in any app on macOS: hold a key, speak, the text is pasted at the cursor. Local by
 default (whisper.cpp on this Mac, Apple's on-device Translation).
 
